@@ -1,0 +1,44 @@
+name: Auto Close Issues
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  close-issue:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'completed') || contains(github.event.issue.labels.*.name, 'wontfix')
+    
+    steps:
+      - name: Close Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.issue.number;
+            const labels = context.payload.issue.labels.map(label => label.name);
+            
+            let closeComment = '';
+            
+            if (labels.includes('completed')) {
+              closeComment = '✅ This issue has been marked as completed and is now being closed automatically.';
+            } else if (labels.includes('wontfix')) {
+              closeComment = '🚫 This issue has been marked as wontfix and is now being closed automatically.';
+            }
+            
+            // Add comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: closeComment
+            });
+            
+            // Close the issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              state: 'closed'
+            });
+            
+            console.log(`Issue #${issue_number} has been closed automatically.`);
