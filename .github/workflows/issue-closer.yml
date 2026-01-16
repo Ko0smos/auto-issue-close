@@ -1,0 +1,26 @@
+name: Close Issues
+
+on:
+  issues:
+    branches:
+      - main
+    types:
+      - opened
+      - labeled
+      - edited
+      - assigned
+      - deleted
+      - converted_to_issue
+      - demilestoned
+      - milestoned
+      - closed
+    labels:
+      - completed
+      - wontfix
+
+jobs:
+  close_issue:
+    runs-on: ubuntu-latest
+    handler: closeIssue
+    inputs:
+      issue_number: ${{ github.event.issue.number }}
